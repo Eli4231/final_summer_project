@@ -22,17 +22,17 @@ const storage =multer.diskStorage({
 });
 const upload = multer({storage: storage});
 
-router.get('/',upload.single('myFile'),(req,res)=>{
+router.get('/',(req,res)=>{
     res.json(projects);
 });
 
-router.post('/',(req,res)=>{
+router.post('/',upload.single('myFile'),(req,res)=>{
     let name = req.body.name;
-    id = nextID;
+    let id = nextID++;
     let description=req.body.description;
     let myFileName = req.file ? req.file.filename : null;
     let project = {id,name,description,myFileName};
-    projects[id] = project;
+    projects.push(project);
     res.json({massege:"ok"});
 
 });
@@ -41,15 +41,18 @@ router.delete('/:id',(req,res)=>{
  if(isNaN(id)){
     return res.json({massege:"לא חוקי"})
  }
-let project =projects[id];
-if(!project){
+let index = projects.findIndex(p => p.id === id);
+  if (index === -1) {
 return res.json("לא קיים");
 }
-projects[id] = null;
-if(!fs.existsSync(path.join('image',project.myFileName))){
-    fs.unlinkSync(path.join('image',project.myFileName))
-}
+let project = projects[index];
+  projects.splice(index, 1);
+  if (project.myFileName && fs.existsSync(path.join('images', project.myFileName))) {
+    fs.unlinkSync(path.join('images', project.myFileName));
+  }
+ res.json({ message: "נמחק בהצלחה" });
 });
+
 
 
 
