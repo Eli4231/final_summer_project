@@ -36,6 +36,21 @@ router.post('/',(req,res)=>{
     res.json({massege:"ok"});
 
 });
+router.delete('/:id',(req,res)=>{
+ let id = Number(req.params.id);
+ if(isNaN(id)){
+    return res.json({massege:"לא חוקי"})
+ }
+let project =projects[id];
+if(!project){
+return res.json("לא קיים");
+}
+projects[id] = null;
+if(!fs.existsSync(path.join('image',project.myFileName))){
+    fs.unlinkSync(path.join('image',project.myFileName))
+}
+});
+
 
 
 

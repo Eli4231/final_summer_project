@@ -1,5 +1,5 @@
 function addTitle(){
     let txt = "projects";
-    document.getElementById('h1').innerText=txt;
+    document.getElementById("h1").innerText=txt;
 }
 addTitle();
