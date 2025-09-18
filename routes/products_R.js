@@ -27,10 +27,11 @@ router.get('/',upload.single('myFile'),(req,res)=>{
 });
 
 router.post('/',(req,res)=>{
-   let name = req.body.name;
+    let name = req.body.name;
     id = nextID;
+    let description=req.body.description;
     let myFileName = req.file ? req.file.filename : null;
-    let project = {id,name,myFileName};
+    let project = {id,name,description,myFileName};
     projects[id] = project;
     res.json({massege:"ok"});
 
