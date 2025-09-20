@@ -2,9 +2,9 @@ const express=require('express');
 const app = express();
 const port = 3550;
 
-app.use(express.static(__dirname));
+app.use(express.static('public'));
 app.use(express.json());
-
+app.use('/images', express.static('images'));
 app.get('/',(req,res)=>{
     res.sendFile(__dirname+'/public/index.html')
 })

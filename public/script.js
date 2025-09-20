@@ -8,8 +8,8 @@ async function getData() {
         let response = await fetch ('/p');
         let data = await response.json();
         createGrid(data);
-    } catch (error) {
-        alert (error)
+    } catch (err) {
+        alert (err)
     }
 }
 
@@ -20,7 +20,7 @@ function createGrid(data){
         txt+=
         `<div class="card">
         <div>
-            <img src="../images${obj.myFileName}" alt="${obj.name}">
+           <img src="/images/${obj.myFileName}" alt="${obj.name}">
             <p>${obj.name}</p>
             <div>${obj.description}</div>
         </div>
@@ -32,6 +32,27 @@ function createGrid(data){
     }
   }
   document.getElementById('main').innerHTML=txt;
+}
+
+async function addProject() {
+    try {
+        let name =document.getElementById('name').value;
+         let description =document.getElementById('description').value;
+          let myFile =document.getElementById('myFile').files[0];
+          let formData = new FormData();
+         formData.append('name', name);
+         formData.append('description', description);
+          if(myFile){
+           formData.append('myFile', myFile)
+          }
+         await fetch ('/p',{
+            method: 'POST',
+            body:formData
+         })
+         getData();
+    } catch (err) {
+        alert (err)
+    }
 }
 
 
