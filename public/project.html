@@ -2,37 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Project Page</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>פרויקט</title>
+  <link rel="stylesheet" href="project.css">
 </head>
 <body>
+  <!-- קישור חזרה לדף הראשי -->
   <a href="index.html">⬅ חזרה</a>
+
+  <!-- כאן הדינמי יוצג -->
   <div id="project"></div>
+
   <script>
+
+    
+    // פונקציה לקבלת פרמטר מה-URL
     function getParam(name) {
       return new URLSearchParams(window.location.search).get(name);
     }
-    let id = parseInt(getParam("id"));
 
-   async function loadProject() {
-  let res = await fetch(`/p/${id}`);
-  let project = await res.json();
+    const id = parseInt(getParam("id"));
 
-  if (project && project.id) {
-    document.getElementById("project").innerHTML = `
-      <div class="project-page">
-        <h1>${project.name}</h1>
-        <img src="/images/${project.myFileName}?t=${Date.now()}" alt="${project.name}" width="300">
-        <p>${project.description}</p>
-        <p><strong>קולות:</strong> ${project.votes || 0}</p>
-        <button onclick="vote(${project.id})">👍 הצבע</button>
-      </div>
-    `;
-  } else {
-    document.getElementById("project").innerHTML = "<p>הפרויקט לא נמצא</p>";
-  }
-}
-    loadProject();
+    // רשימת הפרויקטים
+    const projects = [
+      {
+        id: 1,
+        name: "מעקב אחר כושר",
+        description: "אפליקציה שמאפשרת למשתמש לעקוב אחרי אימונים, כמות חזרות, משקל והרגלי תזונה. ניתן לראות סטטיסטיקות שבועיות ומעקב אחר מטרות אישיות.",
+        myFileName: "fitness.png",
+        votes: 0
+      },
+      {
+        id: 2,
+        name: "מזג אוויר עדכני",
+        description: "אפליקציה המציגה את מזג האוויר בזמן אמת לפי מיקום המשתמש, כולל טמפרטורה, לחות ורוח. המידע מתעדכן כל כמה דקות באמצעות API חיצוני.",
+        myFileName: "weather.png",
+        votes: 0
+      },
+      {
+        id: 3,
+        name: "משחק זיכרון",
+        description: "משחק זיכרון בו המשתמש צריך לזכור ולהשלים רצפים של כרטיסים. ניתן לשחק לבד או בשני שחקנים, עם מספר רמות קושי ומהירויות שונות.",
+        myFileName: "memory.png",
+        votes: 0
+      }
+    ];
+
+    const project = projects.find(p => p.id === id);
+
+    if (project) {
+      document.getElementById("project").innerHTML = `
+        <div class="project-page">
+          <h1>${project.name}</h1>
+          <img src="images/${project.myFileName}" alt="${project.name}">
+          <p>${project.description}</p>
+          <p><strong>קולות:</strong> <span id="vote-count">${project.votes}</span></p>
+          <button onclick="vote(${project.id})">👍 הצבע</button>
+        </div>
+      `;
+    } else {
+      document.getElementById("project").innerHTML = "<p>הפרויקט לא נמצא</p>";
+    }
+
+    function vote(id){
+      const voteCountElem = document.getElementById("vote-count");
+      let count = parseInt(voteCountElem.textContent);
+      voteCountElem.textContent = count + 1;
+      alert(`הצבעת עבור פרויקט ${id}!`);
+    }
   </script>
 </body>
 </html>
