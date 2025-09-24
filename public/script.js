@@ -20,7 +20,7 @@ function createGrid(data){
         txt+=
         `<div class="card">
         <div>
-           <img src="/images/${obj.myFileName}" alt="${obj.name}">
+           <img src="/images/${obj.myFileName}?t=${Date.now()}" alt="${obj.name}">
             <p>${obj.name}</p>
             <div>${obj.description}</div>
         </div>
@@ -44,7 +44,7 @@ async function addProject() {
          formData.append('description', description);
           if(myFile){
            formData.append('myFile', myFile)
-   ;       }
+         }
          await fetch ('/p',{
             method: 'POST',
             body:formData
@@ -56,17 +56,21 @@ async function addProject() {
     }
 }
 function clearInput(){
-    //  document.getElementById('id').value="";
+     document.getElementById('id').value="";
       document.getElementById('name').value="";
        document.getElementById('description').value="";
         document.getElementById('myFile').value="";
+        document.getElementById('myImage').src="";
 }
 async function deleteProject(id) {
     try {
-        await fetch(`/p/${id}`,{
+        if(confirm('האם אתה בטוח?')){
+          await fetch(`/p/${id}`,{
             method: 'DELETE'
         })
         getData();
+
+        }
     } catch (err) {
         alert(err)
         
@@ -87,6 +91,36 @@ async function getById(id) {
     }
 }
 
+async function editProject(id) {
+  try {
+         let name =document.getElementById('name').value;
+         let description =document.getElementById('description').value;
+         let myFile =document.getElementById('myFile').files[0];
+         let formData = new FormData();
+         formData.append('name', name);
+         formData.append('description', description);
+          if(myFile){
+           formData.append('myFile', myFile)
+         }
+       await fetch(`/p/${id}`,{
+        method:'PATCH',
+        body:formData
+       })    
+       getData();
+       clearInput();
+  } catch (err) {
+    alert(err)
+  }
+    
+}
 
+function addOrEdit(){
+    let id = document.getElementById('id').value;
+    if(id){
+        editProject(id);
+    }else{
+        addProject();
+    }
+}
 getData();
 addTitle();
