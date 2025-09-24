@@ -25,7 +25,7 @@ function createGrid(data){
             <div>${obj.description}</div>
         </div>
         <div>
-             <button>Delete</button>
+             <button onClick="deleteProject(${obj.id})">Delete</button>
              <button>Edit</button>
         </div>
         </div>`
@@ -44,18 +44,34 @@ async function addProject() {
          formData.append('description', description);
           if(myFile){
            formData.append('myFile', myFile)
-          }
+   ;       }
          await fetch ('/p',{
             method: 'POST',
             body:formData
          })
          getData();
+         clearInput();
     } catch (err) {
         alert (err)
     }
 }
-
-
+function clearInput(){
+    //  document.getElementById('id').value="";
+      document.getElementById('name').value="";
+       document.getElementById('description').value="";
+        document.getElementById('myFile').value="";
+}
+async function deleteProject(id) {
+    try {
+        await fetch(`/p/${id}`,{
+            method: 'DELETE'
+        })
+        getData();
+    } catch (err) {
+        alert(err)
+        
+    }
+}
 
 
 
