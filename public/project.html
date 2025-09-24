@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Page</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a href="index.html">⬅ חזרה</a>
+  <div id="project"></div>
+  <script>
+    function getParam(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+    let id = parseInt(getParam("id"));
+
+    async function loadProject() {
+      let res = await fetch(`/p/${id}`);
+      let project = await res.json();
+      if (project) {
+        document.getElementById("project").innerHTML = `
+          <h1>${project.name}</h1>
+          <img src="/images/${project.myFileName}" width="200">
+          <p>${project.description}</p>
+          <p>קולות: ${project.votes || 0}</p>
+        `;
+      }
+    }
+    loadProject();
+  </script>
+</body>
+</html>

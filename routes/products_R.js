@@ -125,7 +125,22 @@ router.post('/:id/vote', (req, res) => {
     res.json({ message: "הצבעת בהצלחה", votes: project.votes });
 });
 
+// routes/products_R.js
+
+
+// --- הצבעה ---
+router.patch('/vote/:id',(req,res)=>{
+    let id = parseInt(req.params.id);
+    let project = projects.find(p=>p.id===id);
+    if(project){
+        project.votes = (project.votes || 0) + 1;
+        res.json(project);
+    }else{
+        res.status(404).send("Project not found");
+    }
+});
+
+module.exports = router;
 
 
 
-module.exports =router;

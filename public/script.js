@@ -14,21 +14,24 @@ async function getData() {
 }
 
 function createGrid(data){
+  let voted = JSON.parse(localStorage.getItem("votedProjects")) || [];
   let txt= "";
-  for(obj of data){
+  for(let obj of data){
     if(obj){
-        txt+=
-        `<div class="card">
-        <div>
+      let disabled = voted.includes(obj.id) ? "disabled" : "";
+      txt+=
+      `<div class="card">
+        <div onclick="openProject(${obj.id})" style="cursor:pointer">
            <img src="/images/${obj.myFileName}?t=${Date.now()}" alt="${obj.name}">
-            <p>${obj.name}</p>
-            <div>${obj.description}</div>
+           <p>${obj.name}</p>
+           <div>${obj.description}</div>
         </div>
         <div>
              <button onClick="deleteProject(${obj.id})">Delete</button>
              <button onClick="getById(${obj.id})">Edit</button>
+             <button onClick="vote(${obj.id})" ${disabled}>👍 הצבע (${obj.votes || 0})</button>
         </div>
-        </div>`
+      </div>`;
     }
   }
   document.getElementById('main').innerHTML=txt;
@@ -122,5 +125,38 @@ function addOrEdit(){
         addProject();
     }
 }
+
+
+// --- חדש: הגדרת פרויקטים ברירת מחדל ---
+function initProjects() {
+  let voted = JSON.parse(localStorage.getItem("votedProjects")) || [];
+  if (!localStorage.getItem("votedProjects")) {
+    localStorage.setItem("votedProjects", JSON.stringify([]));
+  }
+}
+
+// --- יצירת כרטיסיות (שדרוג לגרסה שלך) ---
+
+
+// --- הצבעה חד פעמית ---
+function vote(id) {
+  let voted = JSON.parse(localStorage.getItem("votedProjects")) || [];
+  if (!voted.includes(id)) {
+    fetch(`/p/vote/${id}`, {method:"PATCH"})
+    .then(()=> {
+      voted.push(id);
+      localStorage.setItem("votedProjects", JSON.stringify(voted));
+      getData();
+    });
+  }
+}
+
+// --- פתיחת דף פרויקט מורחב ---
+function openProject(id){
+  window.location.href = `project.html?id=${id}`;
+}
+
+// --- טעינת ברירת מחדל ---
+initProjects();
 getData();
 addTitle();
