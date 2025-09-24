@@ -14,18 +14,24 @@
     }
     let id = parseInt(getParam("id"));
 
-    async function loadProject() {
-      let res = await fetch(`/p/${id}`);
-      let project = await res.json();
-      if (project) {
-        document.getElementById("project").innerHTML = `
-          <h1>${project.name}</h1>
-          <img src="/images/${project.myFileName}" width="200">
-          <p>${project.description}</p>
-          <p>קולות: ${project.votes || 0}</p>
-        `;
-      }
-    }
+   async function loadProject() {
+  let res = await fetch(`/p/${id}`);
+  let project = await res.json();
+
+  if (project && project.id) {
+    document.getElementById("project").innerHTML = `
+      <div class="project-page">
+        <h1>${project.name}</h1>
+        <img src="/images/${project.myFileName}?t=${Date.now()}" alt="${project.name}" width="300">
+        <p>${project.description}</p>
+        <p><strong>קולות:</strong> ${project.votes || 0}</p>
+        <button onclick="vote(${project.id})">👍 הצבע</button>
+      </div>
+    `;
+  } else {
+    document.getElementById("project").innerHTML = "<p>הפרויקט לא נמצא</p>";
+  }
+}
     loadProject();
   </script>
 </body>
