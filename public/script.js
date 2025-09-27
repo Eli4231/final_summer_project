@@ -15,6 +15,7 @@ async function getData() {
 
 function createGrid(data) {
   let voted = JSON.parse(localStorage.getItem("votedProjects")) || [];
+  voted = voted.map(Number); 
   let txt = "";
   for (let obj of data) {
     if (obj) {
@@ -36,7 +37,6 @@ function createGrid(data) {
   }
   document.getElementById("main").innerHTML = txt;
 }
-
 async function addProject() {
   try {
     let name = document.getElementById("name").value;
@@ -146,36 +146,40 @@ function initProjects() {
     localStorage.setItem("userId", Date.now().toString());
   }
 }
-
 // --- הצבעה חד פעמית ---
 function vote(id) {
   let userId = localStorage.getItem("userId");
+  if (!userId) {
+    userId = Date.now().toString();
+    localStorage.setItem("userId", userId);
+  }
 
   fetch(`/p/${id}/vote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userId }),
   })
-    .then((res) => res.json())
-    .then((data) => {
-      alert(data.message);
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
 
-      let voted = JSON.parse(localStorage.getItem("votedProjects")) || [];
-      if (!voted.includes(id)) {
-        voted.push(id);
-        localStorage.setItem("votedProjects", JSON.stringify(voted));
-      }
+    let voted = JSON.parse(localStorage.getItem("votedProjects")) || [];
+    if (!voted.includes(id)) {
+      voted.push(id);
+      localStorage.setItem("votedProjects", JSON.stringify(voted));
+    }
 
-      getData();
-    });
+    
+    getData();  
+  });
 }
-
 // --- פתיחת דף פרויקט מורחב ---
 function openProject(id) {
   window.location.href = `project.html?id=${id}`;
 }
 
+
 // --- טעינת ברירת מחדל ---
-initProjects();
+// initProjects();
 getData();
 addTitle();
