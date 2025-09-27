@@ -1,96 +1,95 @@
 const express = require('express');
 const router = express.Router();
-const multer =require('multer');
+const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
 let projects = [];
-let nextID =1;
+let nextID = 1;
 
 function initProjects() {
     if (projects.length === 0) {
         projects.push(
-            { id: nextID++, name: "Fitness Tracker", description: "מערכת מעקב אימונים אישית", myFileName: "fitness.png", votes: 0 },
-            { id: nextID++, name: "Weather App", description: "אפליקציית מזג אוויר פשוטה", myFileName: "weather.png", votes: 0 },
-            { id: nextID++, name: "Memory Game", description: "משחק זיכרון בסיסי", myFileName: "memory.png", votes: 0 }
+            { id: nextID++, name: "Fitness Tracker", description: "מערכת מעקב אימונים אישית", myFileName: "fitness.png", votes: 0, voters: [] },
+            { id: nextID++, name: "Weather App", description: "אפליקציית מזג אוויר פשוטה", myFileName: "weather.png", votes: 0, voters: [] },
+            { id: nextID++, name: "Memory Game", description: "משחק זיכרון בסיסי", myFileName: "memory.png", votes: 0, voters: [] }
         );
     }
 }
 initProjects();
 
-if(!fs.existsSync('images')){
+if (!fs.existsSync('images')) {
     fs.mkdirSync('images');
 }
-const storage =multer.diskStorage({
-    destination:(req,file,cb)=>{
-        cb(null,'images/');
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'images/');
     },
-    filename: (req,file,cb)=>{
-        let id =req.params.id ? req.params.id : nextID;
-        let finalFileName= `${id}${path.extname(file.originalname)}`;
-        cb(null,finalFileName);
+    filename: (req, file, cb) => {
+        // ביצירה חדשה יש req.newId
+        let id = req.newId ? req.newId : req.params.id;
+        let finalFileName = `${id}${path.extname(file.originalname)}`;
+        cb(null, finalFileName);
     }
 });
-const upload = multer({storage: storage});
+const upload = multer({ storage: storage });
 
-// שליפה של כל הפרוייקטים
-router.get('/',(req,res)=>{
+// --- שליפה של כל הפרויקטים ---
+router.get('/', (req, res) => {
     res.json(projects);
 });
 
-// תצוגה של פרוייקט בודד לפי id
+// --- שליפה לפי ID ---
 router.get('/:id', (req, res) => {
-  let id = Number(req.params.id);
-  let project = projects.find(p => p.id === id);
-  if (!project) {
-    return res.status(404).json({ message: "פרויקט לא נמצא" });
-  }
-  res.json(project);
+    let id = Number(req.params.id);
+    let project = projects.find(p => p.id === id);
+    if (!project) return res.status(404).json({ message: "פרויקט לא נמצא" });
+    res.json(project);
 });
 
-// יצירת פרוייקט חדש
-router.post('/',upload.single('myFile'),(req,res)=>{
+// --- יצירת פרויקט חדש ---
+router.post('/', (req, res, next) => {
+    req.newId = nextID++; 
+    next();
+}, upload.single('myFile'), (req, res) => {
+    let id = req.newId;
     let name = req.body.name;
-    let id = nextID++;
-    let description=req.body.description;
+    let description = req.body.description;
     let myFileName = req.file ? req.file.filename : null;
-    let project = {id,name,description,myFileName};
+
+    let project = { id, name, description, myFileName, votes: 0, voters: [] };
     projects.push(project);
-    res.json({massege:"ok"});
 
+    res.json({ message: "ok", project });
 });
 
-// מחיקה של פרוייקט
-router.delete('/:id',(req,res)=>{
- let id = Number(req.params.id);
- if(isNaN(id)){
-    return res.json({massege:"לא חוקי"})
- }
-let index = projects.findIndex(p => p.id === id);
-  if (index === -1) {
-return res.json("לא קיים");
-}
-let project = projects[index];
-  projects.splice(index, 1);
-  if (project.myFileName && fs.existsSync(path.join('images', project.myFileName))) {
-    fs.unlinkSync(path.join('images', project.myFileName));
-  }
- res.json({ message: "נמחק בהצלחה" });
+// --- מחיקה ---
+router.delete('/:id', (req, res) => {
+    let id = Number(req.params.id);
+    if (isNaN(id)) return res.json({ message: "לא חוקי" });
+
+    let index = projects.findIndex(p => p.id === id);
+    if (index === -1) return res.json("לא קיים");
+
+    let project = projects[index];
+    projects.splice(index, 1);
+
+    if (project.myFileName && fs.existsSync(path.join('images', project.myFileName))) {
+        fs.unlinkSync(path.join('images', project.myFileName));
+    }
+
+    res.json({ message: "נמחק בהצלחה" });
 });
 
-
-// עידכון של פרוייקט קיים 
+// --- עדכון ---
 router.patch('/:id', upload.single('myFile'), (req, res) => {
     let id = Number(req.params.id);
-
-   
     if (isNaN(id)) return res.json({ message: "מזהה לא חוקי" });
 
-    
     let project = projects.find(p => p.id === id);
     if (!project) return res.json({ message: "פרויקט לא קיים" });
 
-    
     let oldFileName = project.myFileName;
     let newFileName = req.file ? req.file.filename : null;
 
@@ -101,19 +100,16 @@ router.patch('/:id', upload.single('myFile'), (req, res) => {
         project.myFileName = newFileName;
     }
 
-   
     if (req.body.name) project.name = req.body.name;
     if (req.body.description) project.description = req.body.description;
 
-    
     res.json({ message: "עודכן בהצלחה", project });
 });
 
-// דירוג של פרוייקט
-
+// --- הצבעה (משתמש יכול להצביע פעם אחת בלבד) ---
 router.post('/:id/vote', (req, res) => {
     let id = Number(req.params.id);
-    let userId = req.body.userId; 
+    let userId = req.body.userId;
 
     if (isNaN(id) || !userId) {
         return res.json({ message: "פרויקט או משתמש לא חוקיים" });
@@ -121,10 +117,6 @@ router.post('/:id/vote', (req, res) => {
 
     let project = projects.find(p => p.id === id);
     if (!project) return res.json({ message: "פרויקט לא נמצא" });
-
-    // בדיקה אם המשתמש כבר הצביע
-    if (!project.voters) project.voters = [];
-    if (!project.votes) project.votes = 0;
 
     if (project.voters.includes(userId)) {
         return res.json({ message: "כבר הצבעת על פרויקט זה", votes: project.votes });
@@ -134,21 +126,6 @@ router.post('/:id/vote', (req, res) => {
     project.voters.push(userId);
 
     res.json({ message: "הצבעת בהצלחה", votes: project.votes });
-});
-
-// routes/products_R.js
-
-
-// --- הצבעה ---
-router.patch('/vote/:id',(req,res)=>{
-    let id = parseInt(req.params.id);
-    let project = projects.find(p=>p.id===id);
-    if(project){
-        project.votes = (project.votes || 0) + 1;
-        res.json(project);
-    }else{
-        res.status(404).send("Project not found");
-    }
 });
 
 module.exports = router;
