@@ -7,17 +7,6 @@ const fs = require('fs');
 let projects = [];
 let nextID = 1;
 
-// function initProjects() {
-//     if (projects.length === 0) {
-//         projects.push(
-//             { id: nextID++, name: "Fitness Tracker", description: "מערכת מעקב אימונים אישית", myFileName: "fitness.png", votes: 0, voters: [] },
-//             { id: nextID++, name: "Weather App", description: "אפליקציית מזג אוויר פשוטה", myFileName: "weather.png", votes: 0, voters: [] },
-//             { id: nextID++, name: "Memory Game", description: "משחק זיכרון בסיסי", myFileName: "memory.png", votes: 0, voters: [] }
-//         );
-//     }
-// }
-// initProjects();
-
 if (!fs.existsSync('images')) {
     fs.mkdirSync('images');
 }
@@ -27,7 +16,7 @@ const storage = multer.diskStorage({
         cb(null, 'images/');
     },
     filename: (req, file, cb) => {
-        // ביצירה חדשה יש req.newId
+       
         let id = req.newId ? req.newId : req.params.id;
         let finalFileName = `${id}${path.extname(file.originalname)}`;
         cb(null, finalFileName);
@@ -109,21 +98,24 @@ router.patch('/:id', upload.single('myFile'), (req, res) => {
 // --- הצבעה (משתמש יכול להצביע פעם אחת בלבד) ---
 router.post('/:id/vote', (req, res) => {
     let id = Number(req.params.id);
-    let userId = req.body.userId;
-
-    if (isNaN(id) || !userId) {
-        return res.json({ message: "פרויקט או משתמש לא חוקיים" });
+    if (isNaN(id)) {
+        return res.json({ message: "מזהה פרויקט לא חוקי" });
     }
 
     let project = projects.find(p => p.id === id);
     if (!project) return res.json({ message: "פרויקט לא נמצא" });
 
-    if (project.voters.includes(userId)) {
+    
+    let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+    
+    if (project.voters.includes(ip)) {
         return res.json({ message: "כבר הצבעת על פרויקט זה", votes: project.votes });
     }
 
+    
     project.votes++;
-    project.voters.push(userId);
+    project.voters.push(ip);
 
     res.json({ message: "הצבעת בהצלחה", votes: project.votes });
 });

@@ -32,9 +32,6 @@
     }
 
     function renderProject(project) {
-    let voted = JSON.parse(localStorage.getItem("votedProjects")) || [];
-    voted = voted.map(Number); // לוודא שכל הערכים הם מספרים
-    let disabled = voted.includes(Number(project.id)) ? "disabled" : "";
 
     document.getElementById("project").innerHTML = `
         <div class="project-page">
@@ -42,39 +39,28 @@
           <img src="/images/${project.myFileName}?t=${Date.now()}" alt="${project.name}">
           <p>${project.description}</p>
           <p><strong>קולות:</strong> <span id="vote-count">${project.votes}</span></p>
-          <button id="vote-btn" onclick="vote(${project.id})" ${disabled}>👍 הצבע</button>
+          <button id="vote-btn" onclick="vote(${project.id})">👍 הצבע</button>
           <p id="vote-message" style="color: green; margin-top: 10px;"></p>
         </div>
     `;
 }
-function getUserId() {
-  let userId = localStorage.getItem("userId");
-  if (!userId) {
-    userId = Date.now().toString(); // או אפשר גם משהו כמו UUID
-    localStorage.setItem("userId", userId);
-  }
-  return userId;
-}
+
 async function vote(id) {
-  const userId = getUserId();
   try {
     const response = await fetch(`/p/${id}/vote`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId })
+      headers: { "Content-Type": "application/json" }
     });
     const data = await response.json();
 
     alert(data.message);
-    // עדכון כפתור ומספר הצבעות
-    const btn = document.getElementById(`vote-btn-${id}`) || document.getElementById("vote-btn");
-    if (btn) btn.disabled = true;
+
+    const btn = document.getElementById("vote-btn");
+    if (btn) btn.disabled = (data.message.includes("כבר הצבעת"));
 
     if (data.votes !== undefined) {
-      const voteCountEl = document.getElementById(`vote-count-${id}`) || document.getElementById("vote-count");
-      if (voteCountEl) voteCountEl.textContent = data.votes;
+      document.getElementById("vote-count").textContent = data.votes;
     }
-
   } catch (err) {
     console.error(err);
     alert("שגיאה בהצבעה");
