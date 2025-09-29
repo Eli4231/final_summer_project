@@ -100,8 +100,19 @@ button:hover {
     width: 80%;
 }
 
+
+
+#main p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 10px 0;
+}
+
+
 /* כרטיס */
 .card {
+    
     display: flex;
     flex-direction: column;
     justify-content: space-around;
@@ -121,8 +132,9 @@ button:hover {
 }
 
 .card img {
-    width: 80%;
-    height: auto;
+    width: 100%;          
+    height: 120px;        
+    object-fit: cover;   
     border-radius: 15px;
     margin-top: 10px;
 }
