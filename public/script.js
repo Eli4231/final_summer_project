@@ -27,7 +27,7 @@ function createGrid(data) {
         <div>
              <button onClick="deleteProject(${obj.id})">Delete</button>
              <button onClick="getById(${obj.id})">Edit</button>
-             <button onClick="vote(${obj.id})">👍 הצבע (${obj.votes || 0})</button>
+             <button onClick="vote(${obj.id})">👍 vote (${obj.votes || 0})</button>
         </div>
       </div>`;
     }
